@@ -668,14 +668,16 @@ def salvar_no_csv_async(dados):
             except Exception as e:
                 print(f"❌ AVISO: Falha ao copiar para CSV 'live': {e}")
 
-            # 7. Envio de e-mail (não é fatal)
-            try:
-                enviar_email_com_anexo()
-            except Exception as e_email:
-                print(f"❌ AVISO: O registro foi salvo, mas falhou ao enviar o e-mail de backup: {e_email}")
+        # --- 7. ENVIO DE E-MAIL EM SEGUNDO PLANO ---
+        # ATENÇÃO: Agora ele roda FORA do bloco `with csv_lock` e de forma assíncrona!
+        try:
+            # Isso dispara o envio e já passa para a próxima linha sem esperar
+            executor.submit(enviar_email_com_anexo)
+        except Exception as e:
+            print(f"Erro ao agendar envio de e-mail: {e}")
 
-            # 8. Retorno final de sucesso
-            return {"mensagem": f"✅ Registro de {dados['tipo'].upper()} para {dados['nome']} confirmado!"}, 200
+        # 8. Retorno final de sucesso imediato
+        return {"mensagem": f"✅ Registro de {dados['tipo'].upper()} para {dados['nome']} confirmado!"}, 200
 
     except Exception as e:
         import traceback
@@ -1091,4 +1093,3 @@ if __name__ == "__main__":
     print("   Acesso de Gestor: http://127.0.0.1:5000/gestor/login")
 
     app.run(host="0.0.0.0", port=5000, debug=True, use_reloader=True)
-
