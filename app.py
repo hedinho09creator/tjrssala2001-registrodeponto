@@ -668,9 +668,11 @@ def salvar_no_csv_async(dados):
             except Exception as e:
                 print(f"❌ AVISO: Falha ao copiar para CSV 'live': {e}")
 
-            # 7. Envio de e-mail ASSÍNCRONO (não bloqueia a resposta do usuário)
-            # O comando 'executor.submit' dispara o e-mail e libera o site na hora
-            executor.submit(enviar_email_confirmacao, nome, email, tipo, data_hora)
+            # 7. Envio de e-mail (não é fatal)
+            try:
+                enviar_email_com_anexo()
+            except Exception as e_email:
+                print(f"❌ AVISO: O registro foi salvo, mas falhou ao enviar o e-mail de backup: {e_email}")
 
             # 8. Retorno final de sucesso
             return {"mensagem": f"✅ Registro de {dados['tipo'].upper()} para {dados['nome']} confirmado!"}, 200
@@ -783,7 +785,7 @@ nomeCompletoInput.value = ''; submitButton.disabled = true; submitButton.style.b
 submitButton.style.color = '#666';
 }} }} async function enviarRegistro(e) {{ e.preventDefault(); const form = e.target; const dados = new FormData(form);
 const botao = form.querySelector("button");
-botao.disabled = true; botao.innerText = "Enviando..."; try {{ const resposta = await fetch(form.action, {{method:"POST", body:dados}}));
+botao.disabled = true; botao.innerText = "Enviando..."; try {{ const resposta = await fetch(form.action, {{method:"POST", body:dados}});
 const json = await resposta.json();
 const div = document.getElementById("mensagem"); div.innerHTML = `<p style='margin-top:20px;font-size:1.1em;color:${{resposta.ok?"green":"red"}};'>${{json.mensagem}}</p>`; if(resposta.ok){{ form.remove();
 }} else {{ botao.disabled = false; botao.innerText = "Tentar Novamente";
@@ -1089,3 +1091,4 @@ if __name__ == "__main__":
     print("   Acesso de Gestor: http://127.0.0.1:5000/gestor/login")
 
     app.run(host="0.0.0.0", port=5000, debug=True, use_reloader=True)
+
