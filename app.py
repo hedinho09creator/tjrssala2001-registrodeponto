@@ -54,7 +54,7 @@ for pasta in [PASTA_DADOS_APP, PASTA_ANEXOS_LOCAL, PASTA_LOG_DISPOSITIVOS_LOCAL,
 # --- 2. CONSTANTES GLOBAIS ---
 EXPIRACAO_MINUTOS_QR = 2
 TZ_SAO_PAULO = timezone("America/Sao_Paulo")
-GESTOR_PASSWORD = "GESTOR-TJRS-0911"
+GESTOR_PASSWORD = os.environ.get("SECRET_KEY", "GESTOR-TJRS-0911")
 REDES_PERMITIDAS = [
     ipaddress.ip_network("10.209.0.0/16"),  # Cobre tudo de 10.209.0.0 até 10.209.255.255
     ipaddress.ip_network("177.66.6.0/24"), # Cobre tudo de 177.66.6.0 até 177.66.6.255
@@ -63,7 +63,7 @@ REDES_PERMITIDAS = [
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_ADDRESS = 'gestaodepontotjrs@gmail.com'
-EMAIL_PASSWORD = 'qvly lipi bnis fwte'
+EMAIL_PASSWORD = os.environ.get("EMAIL_PASSWORD", "qvly lipi bnis fwte")
 EMAIL_RECIPIENT = 'gestaodepontotjrs@gmail.com'
 
 # Mapa de IDs (fornecido por você)
@@ -1089,4 +1089,5 @@ if __name__ == "__main__":
     # O PythonAnywhere NÃO usa esta parte
     print("🚀 Servidor Flask de DESENVOLVIMENTO iniciado. Acesse http://127.0.0.1:5000")
     print("   Acesso de Gestor: http://127.0.0.1:5000/gestor/login")
+
     app.run(host="0.0.0.0", port=5000, debug=True, use_reloader=True)
