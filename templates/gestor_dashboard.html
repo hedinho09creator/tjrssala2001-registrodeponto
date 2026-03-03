@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard do Gestor</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; background-color: #f9f9f9; }
+        .header { background-color: #333; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { margin: 0; font-size: 24px; }
+        .header a { color: #f0ad4e; text-decoration: none; }
+        .container { padding: 30px; }
+        .card { background: #fff; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .card-header { padding: 20px; border-bottom: 1px solid #eee; }
+        .card-header h2 { margin: 0; }
+        .card-body { padding: 20px; }
+        .status-message { background-color: #dff0d8; color: #3c763d; border: 1px solid #d6e9c6; padding: 15px; border-radius: 4px; margin-bottom: 20px; }
+        .error-message { background-color: #f2dede; color: #a94442; border: 1px solid #ebccd1; }
+
+        form { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+        form div { display: flex; flex-direction: column; }
+        label { margin-bottom: 5px; font-size: 14px; }
+        input[type="text"], select, input[type="month"] {
+            padding: 8px; border: 1px solid #ccc; border-radius: 4px;
+            height: 35px; /* Altura padronizada */
+            box-sizing: border-box; /* Garante que o padding não quebre a altura */
+        }
+        select, input[type="month"] { background-color: white; }
+
+        button { padding: 8px 15px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; height: 35px; }
+        button:hover { background-color: #0056b3; }
+
+        .download-link { display: inline-block; padding: 8px 15px; background-color: #5cb85c; color: white; text-decoration: none; border-radius: 4px; margin-bottom: 20px; }
+        .clear-link { display: inline-block; padding: 8px 15px; background-color: #6c757d; color: white; text-decoration: none; border-radius: 4px; height: 35px; line-height: 20px; box-sizing: border-box; }
+
+        ul { list-style-type: none; padding-left: 0; }
+        li { background: #fdfdfd; border: 1px solid #eee; padding: 10px; margin-bottom: 5px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
+        li a { text-decoration: none; color: #007bff; }
+
+        .table-container { max-height: 600px; overflow-y: auto; overflow-x: auto; border: 1px solid #ddd; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; font-size: 14px; white-space: nowrap; }
+        th { background-color: #f5f5f5; position: sticky; top: 0; }
+
+        .edit-button { padding: 5px 10px; font-size: 12px; background-color: #f0ad4e; color: #333; text-decoration: none; border-radius: 4px; }
+        .edit-button:hover { background-color: #ec971f; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Dashboard do Gestor</h1>
+        <a href="{{ url_for('gestor_logout') }}">Sair</a>
+    </div>
+
+    <div class="container">
+
+        {% if mensagem %}
+            <div class="status-message {% if 'ERRO' in mensagem %}error-message{% endif %}">{{ mensagem }}</div>
+        {% endif %}
+
+        <div class="card">
+            <div class="card-header">
+                <h2>Filtrar Registros Diários</h2>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('gestor_dashboard') }}" method="GET">
+                    <div>
+                        <label for="filtro_nome">Nome:</label>
+                        <input type="text" id="filtro_nome" name="filtro_nome" value="{{ filtros.get('nome', '') }}">
+                    </div>
+
+                    <div>
+                        <label for="filtro_sala">Sala:</label>
+                        <select id="filtro_sala" name="filtro_sala">
+                            <option value="">Todas as Salas</option>
+                            <option value="2001" {% if filtros.sala == '2001' %}selected{% endif %}>Sala 2001</option>
+                            <option value="2205" {% if filtros.sala == '2205' %}selected{% endif %}>Sala 2205</option>
+                            <option value="2107" {% if filtros.sala == '2107' %}selected{% endif %}>Sala 2107</option>
+                            <option value="2203" {% if filtros.sala == '2203' %}selected{% endif %}>Sala 2203</option>
+                            <option value="2207" {% if filtros.sala == '2207' %}selected{% endif %}>Sala 2207</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="filtro_id_estagiario">ID Estagiário:</label>
+                        <input type="text" id="filtro_id_estagiario" name="filtro_id_estagiario" value="{{ filtros.get('id_estagiario', '') }}">
+                    </div>
+                    <button type="submit">Buscar</button>
+                    <a href="{{ url_for('gestor_dashboard') }}" class="clear-link">Limpar Filtros</a>
+                </form>
+            </div>
+        </div>
+
+
+        <div class="card">
+            <div class="card-header">
+                <h2>{{ titulo_registros }}</h2>
+            </div>
+            <div class="card-body">
+                <a href="{{ url_for('gestor_download_csv') }}" class="download-link">Baixar CSV Completo</a>
+                <div class="table-container">
+
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Ação</th>
+                                {% for col in colunas %}
+                                    <th>{{ col }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for registro in registros %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('gestor_editar_registro_form', uuid=registro.UUID) }}" class="edit-button">Editar</a>
+                                </td>
+
+                                {% for col in colunas %}
+
+                                    {% if col == 'Arquivo' %}
+                                        <td>
+                                            {% if registro[col] %}
+                                                <a href="{{ url_for('serve_anexo', filename=registro[col]) }}" target="_blank" download>
+                                                    {{ registro[col] }}
+                                                </a>
+                                            {% endif %}
+                                        </td>
+                                    {% else %}
+                                        <td>{{ registro[col] }}</td>
+                                    {% endif %}
+
+                                {% endfor %}
+                                </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="{{ colunas|length + 1 }}" style="text-align: center;">Nenhum registro encontrado.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

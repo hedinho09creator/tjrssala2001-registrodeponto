@@ -1,0 +1,9 @@
+Flask
+Flask-Compress
+pandas
+xlsxwriter
+openpyxl
+qrcode[pil]
+Pillow
+pytz
+gunicorn

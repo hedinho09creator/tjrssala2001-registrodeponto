@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Registro</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
+        .container { max-width: 800px; margin: 20px auto; padding: 20px; background: #fff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { border-bottom: 2px solid #eee; padding-bottom: 10px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group textarea {
+            width: 95%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;
+        }
+        .form-group input:read-only { background: #eee; }
+        .btn-container { margin-top: 20px; }
+        .btn { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-secondary { background: #6c757d; color: white; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Editar Registro</h1>
+        
+        {% if registro %}
+            <form action="{{ url_for('gestor_salvar_edicao') }}" method="POST">
+                
+                <input type="hidden" name="uuid" value="{{ registro['UUID'] }}">
+                
+                <div class="form-group">
+                    <label for="uuid_display">UUID (Não editável)</label>
+                    <input type="text" id="uuid_display" value="{{ registro['UUID'] }}" readonly>
+                </div>
+
+                <div class="form-group">
+                    <label for="nome">Nome</label>
+                    <input type="text" id="nome" name="nome" value="{{ registro['Nome'] }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="id_estagiario">ID Estagiário</label>
+                    <input type="text" id="id_estagiario" name="id_estagiario" value="{{ registro['ID Estagiário'] }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="sala">Sala</label>
+                    <input type="text" id="sala" name="sala" value="{{ registro['Sala'] }}">
+                </div>
+                
+                <div class="form-group">
+                    <label for="data_entrada">DataHora Entrada</label>
+                    <input type="text" id="data_entrada" name="data_entrada" value="{{ registro['DataHora Entrada'] }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="data_saida">DataHora Saída</label>
+                    <input type="text" id="data_saida" name="data_saida" value="{{ registro['DataHora Saída'] }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="justificativa">Justificativa</label>
+                    <textarea id="justificativa" name="justificativa" rows="4">{{ registro['Justificativa'] }}</textarea>
+                </div>
+                
+                <div class="btn-container">
+                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                    <a href="{{ url_for('gestor_dashboard') }}" class="btn btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        {% else %}
+            <h2>Erro</h2>
+            <p>Não foi possível carregar os dados do registro para edição.</p>
+            <a href="{{ url_for('gestor_dashboard') }}" class="btn btn-secondary">Voltar ao Dashboard</a>
+        {% endif %}
+    </div>
+</body>
+</html>
